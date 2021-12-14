@@ -20,25 +20,47 @@ describe Oystercard do
       expect { card.top_up 10 }.to change{ card.balance }.by 10
     end
 
-    describe 'balance limit' do
-      it 'raises an error' do
-        maximum_balance = Oystercard::MAXIMUM_BLANCE
-        card.top_up(maximum_balance)
-        expect { card.top_up(1) }.to raise_error "The card limit is #{Oystercard::MAXIMUM_BLANCE}"
-      end
+    it 'raises an error if the maximum balance is exceeded' do
+      maximum_balance = Oystercard::MAXIMUM_BALANCE
+      card.top_up(maximum_balance)
+      expect { card.top_up(1) }.to raise_error "Maximum balance of #{maximum_balance} exceeded"
     end
   end
 
   describe '#detuct' do
     it { is_expected.to respond_to(:deduct).with(1).argument }
 
-    it 'deduct from balance' do
-      card.top_up(Oystercard::MAXIMUM_BLANCE)
-      expect { card.deduct(10) }.to change{ card.balance }.by(-10)
+    it 'deducts an amount from the balance' do
+      card.top_up(Oystercard::MAXIMUM_BALANCE)
+      expect { card.deduct 10  }.to change{ card.balance }.by -10 
     end
-
   end
 
+  describe '#touch_in' do
+    it { is_expected.to respond_to :touch_in }
+
+    it 'can touch in' do
+      card.touch_in
+      expect(card).to be_in_journey
+    end
+  end
+
+  describe '#touch_out' do
+    it { is_expected.to respond_to :touch_out }
+    
+    it 'can touch out' do
+      card.touch_in
+      card.touch_out
+      expect(card).to_not be_in_journey
+    end
+  end
+
+  describe '#in_journey?' do
+    it { is_expected.to respond_to :in_journey? }
+
+    it 'has an initial value of false' do
+      expect(card).to_not be_in_journey
+    end
+  end
 
 end
-
