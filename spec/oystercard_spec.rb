@@ -29,5 +29,16 @@ describe Oystercard do
     end
   end
 
+  describe '#detuct' do
+    it { is_expected.to respond_to(:deduct).with(1).argument }
+
+    it 'deduct from balance' do
+      card.top_up(Oystercard::MAXIMUM_BLANCE)
+      expect { card.deduct(10) }.to change{ card.balance }.by(-10)
+    end
+
+  end
+
+
 end
 
