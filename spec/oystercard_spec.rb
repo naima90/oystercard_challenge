@@ -27,15 +27,6 @@ describe Oystercard do
     end
   end
 
-  describe '#detuct' do
-    it { is_expected.to respond_to(:deduct).with(1).argument }
-
-    it 'deducts an amount from the balance' do
-      card.top_up(Oystercard::MAXIMUM_BALANCE)
-      expect { card.deduct 10  }.to change{ card.balance }.by -10 
-    end
-  end
-
   describe '#touch_in' do
     it { is_expected.to respond_to :touch_in }
     
@@ -57,7 +48,7 @@ describe Oystercard do
   describe '#touch_out' do
     it { is_expected.to respond_to :touch_out }
     
-    context 'when finishing a journey' do  
+    context 'when ending a journey' do  
       before do
         card.top_up(Oystercard::MAXIMUM_BALANCE)
         card.touch_in
@@ -69,7 +60,7 @@ describe Oystercard do
       end
 
       it 'deducts the minimum fare' do
-        expect { card.touch_out }.to change { card.balance }.by -Oystercard::MINIMUM_FARE
+        expect { card.touch_out }.to change { card.balance }.by -Oystercard::MINIMUM_CHARGE
       end
     end
   end
