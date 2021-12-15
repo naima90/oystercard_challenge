@@ -39,13 +39,13 @@ describe Oystercard do
   describe '#touch_in' do
     it { is_expected.to respond_to :touch_in }
     
-    context 'when the balance is less than the minimum needed to travel' do
+    context 'without minimum balance' do
       it 'will not touch in' do
         expect { card.touch_in }.to raise_error "Minimum balance of #{Oystercard::MINIMUM_BALANCE} needed"
       end
     end
 
-    context 'when the balance is more than the minimum needed to travel' do
+    context 'with minimum balance' do
       it 'can touch in' do
         card.top_up(Oystercard::MAXIMUM_BALANCE)
         card.touch_in
@@ -57,11 +57,20 @@ describe Oystercard do
   describe '#touch_out' do
     it { is_expected.to respond_to :touch_out }
     
-    it 'can touch out' do
-      card.top_up(Oystercard::MAXIMUM_BALANCE)
-      card.touch_in
-      card.touch_out
-      expect(card).to_not be_in_journey
+    context 'when finishing a journey' do  
+      before do
+        card.top_up(Oystercard::MAXIMUM_BALANCE)
+        card.touch_in
+      end
+      
+      it 'can touch out' do
+        card.touch_out
+        expect(card).to_not be_in_journey
+      end
+
+      it 'deducts the minimum fare' do
+        expect { card.touch_out }.to change { card.balance }.by -Oystercard::MINIMUM_FARE
+      end
     end
   end
 
