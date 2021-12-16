@@ -2,6 +2,7 @@ require 'oystercard'
 
 describe Oystercard do
   let (:entry_station) { double :entry_station }
+  let (:exit_station) { double :exit_station }
   it { is_expected.to be_an Oystercard }
 
   subject(:card) { Oystercard.new }
@@ -9,6 +10,12 @@ describe Oystercard do
   def top_up_touch_in
     subject.top_up(3)
     subject.touch_in(entry_station)
+  end
+
+  describe '#initialize' do
+    it 'returns an empty list of journeys' do
+      expect(card.journeys).to be_empty
+    end
   end
   
   describe '#balance' do
@@ -56,7 +63,7 @@ describe Oystercard do
   end
 
   describe '#touch_out' do
-    it { is_expected.to respond_to :touch_out }
+    it { is_expected.to respond_to(:touch_out).with(1).argument }
     
     context 'when ending a journey' do  
       before do
@@ -65,19 +72,25 @@ describe Oystercard do
       end
       
       it 'can touch out' do
-        card.touch_out
+        card.touch_out(exit_station)
         expect(card).to_not be_in_journey
       end
 
-      it 'deducts the minimum fare' do
-        expect { card.touch_out }.to change { card.balance }.by -Oystercard::MINIMUM_CHARGE
-      end
-      
       it 'forgets entry station on touch out' do
-        subject.touch_out
-        expect(subject.entry_station).to eq nil
+        subject.touch_out(exit_station)
+        expect(subject).to_not be_in_journey
+      end
+
+      it 'stores the exit station' do
+        card.touch_out(exit_station)
+        expect(card.exit_station).to eq exit_station
+      end
+
+      it 'deducts the minimum fare' do
+        expect { card.touch_out(exit_station) }.to change { card.balance }.by -Oystercard::MINIMUM_CHARGE
       end
       
+
     end
   end
 
@@ -88,5 +101,16 @@ describe Oystercard do
       expect(card).to_not be_in_journey
     end
   end
-end
 
+  describe '#journeys' do
+    let(:journey){ {entry_station: entry_station, exit_station: exit_station} }
+  
+    it 'creats one journey' do
+      card.top_up(10)
+      card.touch_in(entry_station)
+      card.touch_out(exit_station)
+      expect(card.journeys).to include journey
+    end
+  end
+
+end
